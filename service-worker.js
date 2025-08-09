@@ -1,14 +1,14 @@
 const CACHE_NAME = 'voice-recorder-v1';
 const urlsToCache = [
-  '/',
-  '/index.html',
-  '/css/styles.css',
-  '/js/app.js',
-  '/js/recorder.js',
-  '/js/storage.js',
-  '/manifest.json',
-  '/icons/icon-192.png',
-  '/icons/icon-512.png'
+  './',
+  './index.html',
+  './css/styles.css',
+  './js/app.js',
+  './js/recorder.js',
+  './js/storage.js',
+  './manifest.json',
+  './icons/icon-192.png',
+  './icons/icon-512.png'
 ];
 
 // Service Worker 설치
@@ -79,7 +79,7 @@ self.addEventListener('fetch', event => {
         }).catch(error => {
           console.error('Fetch failed:', error);
           // 오프라인 폴백 페이지 (선택사항)
-          return caches.match('/offline.html');
+          return caches.match('./offline.html');
         });
       })
   );
@@ -96,8 +96,8 @@ self.addEventListener('sync', event => {
 self.addEventListener('push', event => {
   const options = {
     body: event.data ? event.data.text() : '새로운 알림이 있습니다',
-    icon: '/icons/icon-192.png',
-    badge: '/icons/icon-72.png',
+    icon: './icons/icon-192.png',
+    badge: './icons/icon-72.png',
     vibrate: [200, 100, 200],
     data: {
       dateOfArrival: Date.now(),
@@ -114,7 +114,7 @@ self.addEventListener('push', event => {
 self.addEventListener('notificationclick', event => {
   event.notification.close();
   event.waitUntil(
-    clients.openWindow('/')
+    clients.openWindow('./')
   );
 });
 

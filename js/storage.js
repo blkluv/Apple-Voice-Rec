@@ -245,10 +245,22 @@ class StorageManager {
     }
     
     // 녹음 파일 다운로드
-    downloadRecording(recording) {
+    async downloadRecording(recording) {
+        // 파일 확장자 결정
+        let extension = 'mp3';
+        if (recording.type.includes('mp4') || recording.type.includes('m4a')) {
+            extension = 'm4a';
+        } else if (recording.type.includes('wav')) {
+            extension = 'wav';
+        } else if (recording.type.includes('webm')) {
+            // WebM은 iPhone에서 지원 안함 - WAV로 변환 시도
+            extension = 'wav';
+            console.warn('WebM format detected - iPhone may not support playback');
+        }
+        
         const a = document.createElement('a');
         a.href = recording.url;
-        a.download = `${recording.name}.webm`;
+        a.download = `${recording.name}.${extension}`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);

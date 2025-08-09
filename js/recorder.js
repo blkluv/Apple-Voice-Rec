@@ -242,14 +242,14 @@ class VoiceRecorder {
         return `녹음_${year}${month}${day}_${hour}${minute}${second}`;
     }
     
-    // 지원되는 MIME 타입 확인
+    // 지원되는 MIME 타입 확인 (iOS Safari 우선)
     getSupportedMimeType() {
         const types = [
+            'audio/mp4',      // iOS Safari 우선
+            'audio/mpeg',     // MP3
             'audio/webm;codecs=opus',
             'audio/webm',
-            'audio/ogg;codecs=opus',
-            'audio/mp4',
-            'audio/mpeg'
+            'audio/ogg;codecs=opus'
         ];
         
         for (const type of types) {
@@ -259,7 +259,7 @@ class VoiceRecorder {
             }
         }
         
-        return 'audio/webm'; // 기본값
+        return 'audio/mp4'; // iOS 기본값
     }
     
     // 오디오 시각화 시작

@@ -1,0 +1,39 @@
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+*.log
+npm-debug.log*
+
+# Dependencies
+node_modules/
+
+# Build files
+dist/
+build/
+
+# Local environment
+.env
+.env.local
+
+# Temporary files
+*.tmp
+*.temp
+
+# Icon source files (keep only generated icons)
+create-icons.html
+
+# Personal notes and development files
+notes.txt
+TODO.txt
+Step*.md
+
+# Claude settings
+.claude/

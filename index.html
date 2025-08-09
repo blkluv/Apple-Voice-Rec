@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Voice Recorder">
+    <meta name="theme-color" content="#4A90E2">
+    
+    <title>Voice Recorder - 무료 음성 녹음</title>
+    
+    <link rel="manifest" href="/manifest.json">
+    <link rel="apple-touch-icon" href="/icons/icon-192.png">
+    <link rel="stylesheet" href="/css/styles.css">
+    
+    <meta name="description" content="무료 음성 녹음 PWA 앱 - 설치하고 오프라인에서도 사용 가능">
+</head>
+<body>
+    <div class="container">
+        <!-- 헤더 -->
+        <header class="header">
+            <h1>🎙️ Voice Recorder</h1>
+            <div class="status-indicator" id="statusIndicator">
+                <span class="status-dot"></span>
+                <span class="status-text">준비</span>
+            </div>
+        </header>
+
+        <!-- 녹음 컨트롤 -->
+        <main class="main-content">
+            <!-- 타이머 디스플레이 -->
+            <div class="timer-display" id="timerDisplay">
+                <span class="timer-text">00:00:00</span>
+                <div class="audio-visualizer" id="audioVisualizer">
+                    <canvas id="visualizerCanvas"></canvas>
+                </div>
+            </div>
+
+            <!-- 녹음 버튼들 -->
+            <div class="controls">
+                <button class="btn btn-record" id="recordBtn" aria-label="녹음 시작">
+                    <svg class="icon-record" viewBox="0 0 24 24" width="32" height="32">
+                        <circle cx="12" cy="12" r="10" fill="currentColor"/>
+                    </svg>
+                    <span>녹음 시작</span>
+                </button>
+                
+                <button class="btn btn-pause" id="pauseBtn" disabled aria-label="일시정지">
+                    <svg class="icon-pause" viewBox="0 0 24 24" width="24" height="24">
+                        <rect x="6" y="4" width="4" height="16" fill="currentColor"/>
+                        <rect x="14" y="4" width="4" height="16" fill="currentColor"/>
+                    </svg>
+                    <span>일시정지</span>
+                </button>
+                
+                <button class="btn btn-stop" id="stopBtn" disabled aria-label="녹음 중지">
+                    <svg class="icon-stop" viewBox="0 0 24 24" width="24" height="24">
+                        <rect x="6" y="6" width="12" height="12" fill="currentColor"/>
+                    </svg>
+                    <span>정지</span>
+                </button>
+            </div>
+
+            <!-- 녹음 설정 -->
+            <div class="settings">
+                <label for="audioQuality">음질:</label>
+                <select id="audioQuality" class="select-quality">
+                    <option value="low">낮음 (32kbps)</option>
+                    <option value="medium" selected>보통 (128kbps)</option>
+                    <option value="high">높음 (320kbps)</option>
+                </select>
+            </div>
+        </main>
+
+        <!-- 녹음 목록 -->
+        <section class="recordings-section">
+            <h2>📁 녹음 목록</h2>
+            <div class="recordings-list" id="recordingsList">
+                <p class="empty-message">녹음된 파일이 없습니다</p>
+            </div>
+        </section>
+
+        <!-- 설치 프롬프트 -->
+        <div class="install-prompt" id="installPrompt" style="display: none;">
+            <p>홈 화면에 추가하여 앱처럼 사용하세요!</p>
+            <button class="btn btn-install" id="installBtn">설치하기</button>
+            <button class="btn btn-dismiss" id="dismissBtn">나중에</button>
+        </div>
+    </div>
+
+    <!-- 오디오 플레이어 (숨김) -->
+    <audio id="audioPlayer" controls style="display: none;"></audio>
+
+    <!-- Scripts -->
+    <script src="/js/app.js"></script>
+    <script src="/js/recorder.js"></script>
+    <script src="/js/storage.js"></script>
+    
+    <script>
+        // Service Worker 등록
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/service-worker.js')
+                    .then(registration => console.log('SW registered:', registration))
+                    .catch(error => console.log('SW registration failed:', error));
+            });
+        }
+
+        // PWA 설치 프롬프트
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            document.getElementById('installPrompt').style.display = 'block';
+        });
+
+        document.getElementById('installBtn').addEventListener('click', () => {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then(choiceResult => {
+                    if (choiceResult.outcome === 'accepted') {
+                        console.log('User accepted the install prompt');
+                    }
+                    deferredPrompt = null;
+                    document.getElementById('installPrompt').style.display = 'none';
+                });
+            }
+        });
+
+        document.getElementById('dismissBtn').addEventListener('click', () => {
+            document.getElementById('installPrompt').style.display = 'none';
+        });
+    </script>
+</body>
+</html>

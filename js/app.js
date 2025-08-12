@@ -62,7 +62,7 @@ class VoiceRecorderApp {
             const recordingsList = document.getElementById('recordingsList');
             
             if (recordings.length === 0) {
-                recordingsList.innerHTML = '<p class="empty-message">녹음된 파일이 없습니다</p>';
+                recordingsList.innerHTML = '<p class="empty-message">No recordings.</p>';
                 return;
             }
             
@@ -220,7 +220,7 @@ class VoiceRecorderApp {
             // 목록이 비었는지 확인
             const recordingsList = document.getElementById('recordingsList');
             if (recordingsList.children.length === 0) {
-                recordingsList.innerHTML = '<p class="empty-message">녹음된 파일이 없습니다</p>';
+                recordingsList.innerHTML = '<p class="empty-message">No Recordings.</p>';
             }
             
         } catch (error) {

@@ -20,7 +20,7 @@
     <div class="container" role="main">
         <!-- Header -->
         <header class="header">
-            <h1>🎙️ Voice Recorder</h1>
+            <h1>🎙️ REC. - Voice Recorder</h1>
             <div class="status-indicator" id="statusIndicator" aria-live="polite" aria-atomic="true" role="status" aria-label="Recording status">
                 <span class="status-dot" aria-hidden="true"></span>
                 <span class="status-text">Ready</span>
@@ -73,6 +73,18 @@
                 <div id="qualityDesc" class="visually-hidden">Choose the desired audio recording quality.</div>
             </form>
         </main>
+
+        <!-- Add this right after the recordings list header -->
+        <section class="recordings-section" aria-label="Saved recordings">
+             <h2>📁 Recordings</h2>
+         <!-- NEW MINT BUTTON -->
+         <a href="https://atl5d.com/services/mint-my-music/" id="mintRecordingBtn" class="mint-btn" style="display: none;">
+        🪙 Mint this Rec.
+         </a>
+        <div class="recordings-list" id="recordingsList" aria-live="polite" aria-atomic="true">
+        <p class="empty-message">No recordings available</p>
+        </div>
+        </section>
 
         <!-- Recordings List -->
         <section class="recordings-section" aria-label="Saved recordings">

@@ -274,3 +274,20 @@ document.addEventListener('touchstart', function() {
         window.recorder.audioContext.resume();
     }
 }, { once: true });
+
+// Show/hide mint button based on recordings
+function updateMintButtonVisibility() {
+    const mintBtn = document.getElementById('mintRecordingBtn');
+    const recordingsExist = document.querySelectorAll('.recording-item').length > 0;
+    mintBtn.style.display = recordingsExist ? 'block' : 'none';
+}
+
+// Call this after loading/adding/deleting recordings
+updateMintButtonVisibility();
+
+// Optional: Connect to Web3
+document.getElementById('mintRecordingBtn').addEventListener('click', async (e) => {
+    e.preventDefault();
+    alert('Minting functionality will go here!');
+    // Replace with actual minting logic
+});

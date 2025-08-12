@@ -161,8 +161,8 @@ class VoiceRecorder {
         // Calculate duration
         const duration = this.getRecordingDuration();
         
-        // Generate filename
-        const fileName = this.generateFileName();
+        // Generate filename (using English format)
+        const fileName = this.generateFileName('Recording', 'en');
         
         // Create recording object
         const recording = {
@@ -173,7 +173,8 @@ class VoiceRecorder {
             size: audioBlob.size,
             type: audioBlob.type,
             duration: duration,
-            date: new Date().toISOString()
+            date: new Date().toISOString(), // For storage
+            displayDate: this.formatDisplayDate(new Date()) // For UI
         };
         
         // Save to storage
@@ -186,6 +187,19 @@ class VoiceRecorder {
         this.audioChunks = [];
         this.startTime = null;
         this.pausedTime = 0;
+    }
+    
+    // Format date for UI display (always English)
+    formatDisplayDate(date) {
+        return date.toLocaleString('en-US', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            hour12: true
+        });
     }
     
     // Start timer
@@ -229,8 +243,8 @@ class VoiceRecorder {
         return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
     }
     
-    // Generate filename with multiple format options
-    generateFileName(prefix = "Recording", format = "default") {
+    // Generate filename with English format
+    generateFileName(prefix = "Recording", format = "en") {
         const now = new Date();
         const year = now.getFullYear();
         const month = String(now.getMonth() + 1).padStart(2, '0');
@@ -240,22 +254,19 @@ class VoiceRecorder {
         const second = String(now.getSeconds()).padStart(2, '0');
         
         switch(format) {
-            case "readable":
+            case "en": // English format (default)
                 return `${prefix}_${year}-${month}-${day}_${hour}-${minute}-${second}`;
                 
             case "compact":
                 return `${prefix}_${year}${month}${day}_${hour}${minute}${second}`;
-                
-            case "time-first":
-                return `${prefix}_${hour}-${minute}-${second}_${year}-${month}-${day}`;
                 
             case "ampm":
                 const ampm = hour >= 12 ? 'PM' : 'AM';
                 const hour12 = hour % 12 || 12;
                 return `${prefix}_${year}-${month}-${day}_${hour12}-${minute}-${second}${ampm}`;
                 
-            default: // ISO-8601 format
-                return `${prefix}_${now.toISOString().replace(/[:.]/g, '-').split('T').join('_')}`;
+            default: // ISO-8601 without special chars
+                return `${prefix}_${year}${month}${day}T${hour}${minute}${second}Z`;
         }
     }
     

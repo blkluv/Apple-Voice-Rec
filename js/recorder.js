@@ -9,13 +9,13 @@ class VoiceRecorder {
         this.isRecording = false;
         this.timerInterval = null;
         
-        // 오디오 컨텍스트 (시각화용)
+        // Audio context (for visualization)
         this.audioContext = null;
         this.analyser = null;
         this.dataArray = null;
         this.animationId = null;
         
-        // 음질 설정
+        // Audio quality settings
         this.qualitySettings = {
             low: { audioBitsPerSecond: 32000 },
             medium: { audioBitsPerSecond: 128000 },
@@ -26,25 +26,25 @@ class VoiceRecorder {
     }
     
     init() {
-        // 브라우저 호환성 체크
+        // Check browser compatibility
         if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
             console.error('MediaDevices API not supported');
-            alert('이 브라우저는 녹음 기능을 지원하지 않습니다.');
+            alert('This browser does not support recording functionality.');
             return;
         }
         
-        // MediaRecorder 지원 체크
+        // Check MediaRecorder support
         if (!window.MediaRecorder) {
             console.error('MediaRecorder not supported');
-            alert('이 브라우저는 MediaRecorder를 지원하지 않습니다.');
+            alert('This browser does not support MediaRecorder.');
             return;
         }
     }
     
-    // 녹음 시작
+    // Start recording
     async startRecording() {
         try {
-            // 마이크 권한 요청
+            // Request microphone permission
             this.audioStream = await navigator.mediaDevices.getUserMedia({ 
                 audio: {
                     echoCancellation: true,
@@ -53,41 +53,41 @@ class VoiceRecorder {
                 } 
             });
             
-            // 음질 설정 가져오기
+            // Get quality settings
             const quality = document.getElementById('audioQuality').value;
             const options = {
                 ...this.qualitySettings[quality],
                 mimeType: this.getSupportedMimeType()
             };
             
-            // MediaRecorder 생성
+            // Create MediaRecorder
             this.mediaRecorder = new MediaRecorder(this.audioStream, options);
             this.audioChunks = [];
             
-            // 데이터 수집 이벤트
+            // Data collection event
             this.mediaRecorder.ondataavailable = (event) => {
                 if (event.data.size > 0) {
                     this.audioChunks.push(event.data);
                 }
             };
             
-            // 녹음 중지 이벤트
+            // Recording stop event
             this.mediaRecorder.onstop = () => {
                 this.handleRecordingStop();
             };
             
-            // 녹음 시작
-            this.mediaRecorder.start(1000); // 1초마다 데이터 수집
+            // Start recording
+            this.mediaRecorder.start(1000); // Collect data every 1 second
             this.isRecording = true;
             this.startTime = Date.now();
             
-            // 타이머 시작
+            // Start timer
             this.startTimer();
             
-            // 오디오 시각화 시작
+            // Start audio visualization
             this.startVisualization();
             
-            // UI 업데이트
+            // Update UI
             this.updateUI('recording');
             
             console.log('Recording started');
@@ -95,14 +95,14 @@ class VoiceRecorder {
         } catch (error) {
             console.error('Error starting recording:', error);
             if (error.name === 'NotAllowedError') {
-                alert('마이크 접근 권한이 거부되었습니다. 설정에서 권한을 허용해주세요.');
+                alert('Microphone access was denied. Please enable permissions in your settings.');
             } else {
-                alert('녹음을 시작할 수 없습니다: ' + error.message);
+                alert('Could not start recording: ' + error.message);
             }
         }
     }
     
-    // 녹음 일시정지
+    // Pause recording
     pauseRecording() {
         if (this.mediaRecorder && this.mediaRecorder.state === 'recording') {
             this.mediaRecorder.pause();
@@ -114,7 +114,7 @@ class VoiceRecorder {
         }
     }
     
-    // 녹음 재개
+    // Resume recording
     resumeRecording() {
         if (this.mediaRecorder && this.mediaRecorder.state === 'paused') {
             this.mediaRecorder.resume();
@@ -126,45 +126,45 @@ class VoiceRecorder {
         }
     }
     
-    // 녹음 중지
+    // Stop recording
     stopRecording() {
         if (this.mediaRecorder && this.mediaRecorder.state !== 'inactive') {
             this.mediaRecorder.stop();
             this.isRecording = false;
             this.isPaused = false;
             
-            // 스트림 정지
+            // Stop stream
             if (this.audioStream) {
                 this.audioStream.getTracks().forEach(track => track.stop());
                 this.audioStream = null;
             }
             
-            // 타이머 정지
+            // Stop timer
             this.stopTimer();
             
-            // 시각화 정지
+            // Stop visualization
             this.stopVisualization();
             
-            // UI 업데이트
+            // Update UI
             this.updateUI('stopped');
             
             console.log('Recording stopped');
         }
     }
     
-    // 녹음 완료 처리
+    // Handle recording completion
     handleRecordingStop() {
         const audioBlob = new Blob(this.audioChunks, { 
             type: this.mediaRecorder.mimeType || 'audio/webm' 
         });
         
-        // 녹음 시간 계산
+        // Calculate duration
         const duration = this.getRecordingDuration();
         
-        // 파일명 생성
+        // Generate filename
         const fileName = this.generateFileName();
         
-        // 녹음 객체 생성
+        // Create recording object
         const recording = {
             id: Date.now(),
             name: fileName,
@@ -176,19 +176,19 @@ class VoiceRecorder {
             date: new Date().toISOString()
         };
         
-        // 저장소에 저장
+        // Save to storage
         window.storageManager.saveRecording(recording);
         
-        // 녹음 목록 업데이트
+        // Update recordings list
         window.app.displayRecording(recording);
         
-        // 초기화
+        // Reset
         this.audioChunks = [];
         this.startTime = null;
         this.pausedTime = 0;
     }
     
-    // 타이머 시작
+    // Start timer
     startTimer() {
         this.stopTimer();
         this.timerInterval = setInterval(() => {
@@ -196,7 +196,7 @@ class VoiceRecorder {
         }, 100);
     }
     
-    // 타이머 정지
+    // Stop timer
     stopTimer() {
         if (this.timerInterval) {
             clearInterval(this.timerInterval);
@@ -204,7 +204,7 @@ class VoiceRecorder {
         }
     }
     
-    // 타이머 업데이트
+    // Update timer display
     updateTimer() {
         if (!this.startTime) return;
         
@@ -217,7 +217,7 @@ class VoiceRecorder {
         document.querySelector('.timer-text').textContent = display;
     }
     
-    // 녹음 시간 가져오기
+    // Get recording duration
     getRecordingDuration() {
         if (!this.startTime) return '00:00:00';
         
@@ -229,8 +229,8 @@ class VoiceRecorder {
         return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
     }
     
-    // 파일명 생성
-    generateFileName() {
+    // Generate filename with multiple format options
+    generateFileName(prefix = "Recording", format = "default") {
         const now = new Date();
         const year = now.getFullYear();
         const month = String(now.getMonth() + 1).padStart(2, '0');
@@ -239,13 +239,30 @@ class VoiceRecorder {
         const minute = String(now.getMinutes()).padStart(2, '0');
         const second = String(now.getSeconds()).padStart(2, '0');
         
-        return `녹음_${year}${month}${day}_${hour}${minute}${second}`;
+        switch(format) {
+            case "readable":
+                return `${prefix}_${year}-${month}-${day}_${hour}-${minute}-${second}`;
+                
+            case "compact":
+                return `${prefix}_${year}${month}${day}_${hour}${minute}${second}`;
+                
+            case "time-first":
+                return `${prefix}_${hour}-${minute}-${second}_${year}-${month}-${day}`;
+                
+            case "ampm":
+                const ampm = hour >= 12 ? 'PM' : 'AM';
+                const hour12 = hour % 12 || 12;
+                return `${prefix}_${year}-${month}-${day}_${hour12}-${minute}-${second}${ampm}`;
+                
+            default: // ISO-8601 format
+                return `${prefix}_${now.toISOString().replace(/[:.]/g, '-').split('T').join('_')}`;
+        }
     }
     
-    // 지원되는 MIME 타입 확인 (iOS Safari 우선)
+    // Get supported MIME type (prioritizing iOS Safari)
     getSupportedMimeType() {
         const types = [
-            'audio/mp4',      // iOS Safari 우선
+            'audio/mp4',      // iOS Safari priority
             'audio/mpeg',     // MP3
             'audio/webm;codecs=opus',
             'audio/webm',
@@ -259,14 +276,14 @@ class VoiceRecorder {
             }
         }
         
-        return 'audio/mp4'; // iOS 기본값
+        return 'audio/mp4'; // iOS fallback
     }
     
-    // 오디오 시각화 시작
+    // Start audio visualization
     startVisualization() {
         if (!this.audioStream) return;
         
-        // Audio Context 생성
+        // Create Audio Context
         this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
         this.analyser = this.audioContext.createAnalyser();
         
@@ -277,13 +294,13 @@ class VoiceRecorder {
         const bufferLength = this.analyser.frequencyBinCount;
         this.dataArray = new Uint8Array(bufferLength);
         
-        // Canvas 설정
+        // Canvas setup
         const canvas = document.getElementById('visualizerCanvas');
         const canvasCtx = canvas.getContext('2d');
         canvas.width = canvas.offsetWidth;
         canvas.height = canvas.offsetHeight;
         
-        // 애니메이션 시작
+        // Start animation
         const draw = () => {
             this.animationId = requestAnimationFrame(draw);
             
@@ -309,7 +326,7 @@ class VoiceRecorder {
         draw();
     }
     
-    // 오디오 시각화 정지
+    // Stop audio visualization
     stopVisualization() {
         if (this.animationId) {
             cancelAnimationFrame(this.animationId);
@@ -321,13 +338,13 @@ class VoiceRecorder {
             this.audioContext = null;
         }
         
-        // Canvas 초기화
+        // Clear canvas
         const canvas = document.getElementById('visualizerCanvas');
         const canvasCtx = canvas.getContext('2d');
         canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
     }
     
-    // UI 업데이트
+    // Update UI state
     updateUI(state) {
         const recordBtn = document.getElementById('recordBtn');
         const pauseBtn = document.getElementById('pauseBtn');
@@ -341,9 +358,10 @@ class VoiceRecorder {
                 recordBtn.disabled = true;
                 pauseBtn.disabled = false;
                 stopBtn.disabled = false;
-                statusText.textContent = '녹음 중';
+                statusText.textContent = 'Live';
                 statusDot.className = 'status-dot recording';
                 break;
+                
             case 'paused':
                 recordBtn.disabled = true;
                 pauseBtn.disabled = false;
@@ -351,12 +369,13 @@ class VoiceRecorder {
                     <svg class="icon-play" viewBox="0 0 24 24" width="24" height="24">
                         <path d="M8 5v14l11-7z" fill="currentColor"/>
                     </svg>
-                    <span>재개</span>
+                    <span>Resume</span>
                 `;
                 stopBtn.disabled = false;
-                statusText.textContent = '일시정지';
+                statusText.textContent = 'Paused';
                 statusDot.className = 'status-dot paused';
                 break;
+                
             case 'stopped':
             default:
                 recordBtn.disabled = false;
@@ -366,10 +385,10 @@ class VoiceRecorder {
                         <rect x="6" y="4" width="4" height="16" fill="currentColor"/>
                         <rect x="14" y="4" width="4" height="16" fill="currentColor"/>
                     </svg>
-                    <span>일시정지</span>
+                    <span>Pause</span>
                 `;
                 stopBtn.disabled = true;
-                statusText.textContent = '준비';
+                statusText.textContent = 'Ready';
                 statusDot.className = 'status-dot';
                 document.querySelector('.timer-text').textContent = '00:00:00';
                 break;
@@ -377,5 +396,5 @@ class VoiceRecorder {
     }
 }
 
-// 전역 recorder 인스턴스
+// Global recorder instance
 window.recorder = new VoiceRecorder();

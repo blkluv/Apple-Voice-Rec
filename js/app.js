@@ -5,23 +5,23 @@ class VoiceRecorderApp {
     }
     
     async init() {
-        // 이벤트 리스너 설정
+        // Set up event listeners
         this.setupEventListeners();
         
-        // 저장된 녹음 목록 로드
+        // Load saved recordings list
         await this.loadRecordings();
         
-        // URL 파라미터 체크 (단축키로 실행된 경우)
+        // Check URL parameters (if launched via shortcut)
         this.checkUrlParams();
     }
     
     setupEventListeners() {
-        // 녹음 버튼
+        // Record button
         document.getElementById('recordBtn').addEventListener('click', () => {
             window.recorder.startRecording();
         });
         
-        // 일시정지/재개 버튼
+        // Pause/Resume button
         document.getElementById('pauseBtn').addEventListener('click', () => {
             if (window.recorder.isPaused) {
                 window.recorder.resumeRecording();
@@ -30,27 +30,27 @@ class VoiceRecorderApp {
             }
         });
         
-        // 정지 버튼
+        // Stop button
         document.getElementById('stopBtn').addEventListener('click', () => {
             window.recorder.stopRecording();
         });
         
-        // 페이지 벗어날 때 경고
+        // Page leave warning
         window.addEventListener('beforeunload', (e) => {
             if (window.recorder && window.recorder.isRecording) {
                 e.preventDefault();
-                e.returnValue = '녹음이 진행 중입니다. 페이지를 벗어나시겠습니까?';
+                e.returnValue = 'Recording is in progress. Are you sure you want to leave?';
             }
         });
         
-        // 온라인/오프라인 상태 감지
+        // Online/Offline status detection
         window.addEventListener('online', () => {
-            console.log('온라인 상태');
+            console.log('Online status');
             this.updateConnectionStatus(true);
         });
         
         window.addEventListener('offline', () => {
-            console.log('오프라인 상태');
+            console.log('Offline status');
             this.updateConnectionStatus(false);
         });
     }
@@ -80,29 +80,29 @@ class VoiceRecorderApp {
     displayRecording(recording) {
         const recordingsList = document.getElementById('recordingsList');
         
-        // 빈 메시지 제거
+        // Remove empty message
         const emptyMessage = recordingsList.querySelector('.empty-message');
         if (emptyMessage) {
             emptyMessage.remove();
         }
         
-        // 녹음 아이템 생성
+        // Create recording item
         const recordingItem = document.createElement('div');
         recordingItem.className = 'recording-item';
         recordingItem.dataset.id = recording.id;
         
-        // 날짜 포맷팅
+        // Date formatting
         const date = new Date(recording.date);
-        const dateStr = date.toLocaleDateString('ko-KR');
-        const timeStr = date.toLocaleTimeString('ko-KR', { 
+        const dateStr = date.toLocaleDateString('en-US');
+        const timeStr = date.toLocaleTimeString('en-US', { 
             hour: '2-digit', 
             minute: '2-digit' 
         });
         
-        // 파일 크기 포맷팅
+        // File size formatting
         const sizeStr = window.storageManager.formatBytes(recording.size);
         
-        // 녹음 시간 포맷팅
+        // Recording duration formatting
         const durationStr = window.storageManager.formatDuration(recording.duration);
         
         recordingItem.innerHTML = `
@@ -113,19 +113,19 @@ class VoiceRecorderApp {
                 </div>
             </div>
             <div class="recording-actions">
-                <button class="btn-action btn-play" data-id="${recording.id}" aria-label="재생">
+                <button class="btn-action btn-play" data-id="${recording.id}" aria-label="Play">
                     ▶️
                 </button>
-                <button class="btn-action btn-download" data-id="${recording.id}" aria-label="다운로드">
+                <button class="btn-action btn-download" data-id="${recording.id}" aria-label="Download">
                     ⬇️
                 </button>
-                <button class="btn-action btn-delete" data-id="${recording.id}" aria-label="삭제">
+                <button class="btn-action btn-delete" data-id="${recording.id}" aria-label="Delete">
                     🗑️
                 </button>
             </div>
         `;
         
-        // 이벤트 리스너 추가
+        // Add event listeners
         const playBtn = recordingItem.querySelector('.btn-play');
         const downloadBtn = recordingItem.querySelector('.btn-download');
         const deleteBtn = recordingItem.querySelector('.btn-delete');
@@ -134,7 +134,7 @@ class VoiceRecorderApp {
         downloadBtn.addEventListener('click', () => this.downloadRecording(recording));
         deleteBtn.addEventListener('click', () => this.deleteRecording(recording.id));
         
-        // 목록에 추가 (최신 녹음이 위로)
+        // Add to list (newest recordings first)
         recordingsList.insertBefore(recordingItem, recordingsList.firstChild);
     }
     
@@ -142,7 +142,7 @@ class VoiceRecorderApp {
         try {
             const audioPlayer = document.getElementById('audioPlayer');
             
-            // 이미 재생 중인 경우
+            // If already playing
             if (this.currentPlayingId === recording.id) {
                 if (audioPlayer.paused) {
                     audioPlayer.play();
@@ -154,22 +154,22 @@ class VoiceRecorderApp {
                 return;
             }
             
-            // 새로운 녹음 재생
+            // Play new recording
             audioPlayer.src = recording.url;
             audioPlayer.style.display = 'block';
             
-            // 이전 재생 버튼 초기화
+            // Reset previous play button
             if (this.currentPlayingId) {
                 this.updatePlayButton(this.currentPlayingId, false);
             }
             
             this.currentPlayingId = recording.id;
             
-            // 재생 시작
+            // Start playback
             await audioPlayer.play();
             this.updatePlayButton(recording.id, true);
             
-            // 재생 종료 이벤트
+            // Playback end event
             audioPlayer.onended = () => {
                 this.updatePlayButton(recording.id, false);
                 this.currentPlayingId = null;
@@ -178,7 +178,7 @@ class VoiceRecorderApp {
             
         } catch (error) {
             console.error('Error playing recording:', error);
-            alert('재생 중 오류가 발생했습니다.');
+            alert('An error occurred while playing.');
         }
     }
     
@@ -195,12 +195,12 @@ class VoiceRecorderApp {
     }
     
     async deleteRecording(recordingId) {
-        if (!confirm('이 녹음을 삭제하시겠습니까?')) {
+        if (!confirm('Are you sure you want to delete this recording?')) {
             return;
         }
         
         try {
-            // 재생 중인 경우 정지
+            // Stop if currently playing
             if (this.currentPlayingId === recordingId) {
                 const audioPlayer = document.getElementById('audioPlayer');
                 audioPlayer.pause();
@@ -208,16 +208,16 @@ class VoiceRecorderApp {
                 this.currentPlayingId = null;
             }
             
-            // 저장소에서 삭제
+            // Delete from storage
             await window.storageManager.deleteRecording(recordingId);
             
-            // UI에서 제거
+            // Remove from UI
             const recordingItem = document.querySelector(`[data-id="${recordingId}"]`);
             if (recordingItem) {
                 recordingItem.remove();
             }
             
-            // 목록이 비었는지 확인
+            // Check if list is empty
             const recordingsList = document.getElementById('recordingsList');
             if (recordingsList.children.length === 0) {
                 recordingsList.innerHTML = '<p class="empty-message">No Recordings.</p>';
@@ -225,14 +225,14 @@ class VoiceRecorderApp {
             
         } catch (error) {
             console.error('Error deleting recording:', error);
-            alert('삭제 중 오류가 발생했습니다.');
+            alert('An error occurred while deleting.');
         }
     }
     
     updateConnectionStatus(isOnline) {
         const statusText = document.querySelector('.status-text');
         if (statusText && !window.recorder.isRecording) {
-            statusText.textContent = isOnline ? '준비' : '오프라인';
+            statusText.textContent = isOnline ? 'Ready' : 'Offline';
         }
     }
     
@@ -240,7 +240,7 @@ class VoiceRecorderApp {
         const urlParams = new URLSearchParams(window.location.search);
         const action = urlParams.get('action');
         
-        // 단축키로 녹음 시작
+        // Start recording via shortcut
         if (action === 'record') {
             setTimeout(() => {
                 window.recorder.startRecording();
@@ -248,27 +248,27 @@ class VoiceRecorderApp {
         }
     }
     
-    // 저장 공간 정보 표시
+    // Display storage information
     async showStorageInfo() {
         const info = await window.storageManager.checkStorageQuota();
         if (info) {
-            console.log(`저장 공간: ${info.percentUsed}% 사용 중`);
+            console.log(`Storage: ${info.percentUsed}% used`);
         }
     }
 }
 
-// 앱 초기화
+// App initialization
 document.addEventListener('DOMContentLoaded', () => {
     window.app = new VoiceRecorderApp();
 });
 
-// iOS 특별 처리
+// iOS special handling
 if (navigator.standalone) {
-    // 홈 화면에서 실행된 경우
+    // Running from home screen
     console.log('Running as standalone app');
 }
 
-// 오디오 컨텍스트 초기화 (iOS 제한 우회)
+// Audio context initialization (iOS restriction workaround)
 document.addEventListener('touchstart', function() {
     if (window.recorder && window.recorder.audioContext) {
         window.recorder.audioContext.resume();

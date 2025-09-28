@@ -1,7 +1,7 @@
 {
-  "name": "Voice Recorder - 무료 음성 녹음",
-  "short_name": "Voice Recorder",
-  "description": "무료 음성 녹음 PWA 앱 - 오프라인에서도 사용 가능한 녹음 앱",
+  "name": "REC.HAHZ.LIVE - Free Voice Recording For Tokenizing Audio",
+  "short_name": "Rec Hahz Live",
+  "description": "REC.HAHZ.LIVE - Free Voice Recorder PWA App - Recording app that works offline",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#ffffff",

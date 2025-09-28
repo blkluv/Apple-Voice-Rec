@@ -43,11 +43,10 @@ class StorageManager {
             };
         });
     }
-    
-    // 녹음 저장
+        // Save recording
     async saveRecording(recording) {
         try {
-            // DB가 초기화되지 않았다면 초기화
+            // Initialize DB if not initialized
             if (!this.db) {
                 await this.initDB();
             }
@@ -55,10 +54,10 @@ class StorageManager {
             const transaction = this.db.transaction([this.storeName], 'readwrite');
             const store = transaction.objectStore(this.storeName);
             
-            // Blob을 ArrayBuffer로 변환
+            // Convert Blob to ArrayBuffer
             const arrayBuffer = await recording.blob.arrayBuffer();
             
-            // 저장할 객체 생성
+            // Create object to save
             const recordingData = {
                 id: recording.id,
                 name: recording.name,
@@ -75,7 +74,7 @@ class StorageManager {
                 request.onsuccess = () => {
                     console.log('Recording saved successfully');
                     
-                    // 저장 용량 체크
+                    // Check storage capacity
                     this.checkStorageQuota();
                     
                     resolve(recording.id);
@@ -93,10 +92,10 @@ class StorageManager {
         }
     }
     
-    // 모든 녹음 가져오기
+    // Get all recordings
     async getAllRecordings() {
         try {
-            // DB가 초기화되지 않았다면 초기화
+            // Initialize DB if not initialized
             if (!this.db) {
                 await this.initDB();
             }
@@ -108,7 +107,7 @@ class StorageManager {
             return new Promise((resolve, reject) => {
                 request.onsuccess = () => {
                     const recordings = request.result.map(recording => {
-                        // ArrayBuffer를 Blob으로 변환
+                        // Convert ArrayBuffer to Blob
                         const blob = new Blob([recording.data], { type: recording.type });
                         const url = URL.createObjectURL(blob);
                         
@@ -124,7 +123,7 @@ class StorageManager {
                         };
                     });
                     
-                    // 날짜 기준 내림차순 정렬
+                    // Sort by date descending
                     recordings.sort((a, b) => new Date(b.date) - new Date(a.date));
                     
                     resolve(recordings);
@@ -142,7 +141,7 @@ class StorageManager {
         }
     }
     
-    // 특정 녹음 가져오기
+    // Get specific recording
     async getRecording(id) {
         try {
             if (!this.db) {
@@ -186,7 +185,7 @@ class StorageManager {
         }
     }
     
-    // 녹음 삭제
+    // Delete recording
     async deleteRecording(id) {
         try {
             if (!this.db) {
@@ -215,7 +214,7 @@ class StorageManager {
         }
     }
     
-    // 모든 녹음 삭제
+    // Delete all recordings
     async deleteAllRecordings() {
         try {
             if (!this.db) {
@@ -244,16 +243,16 @@ class StorageManager {
         }
     }
     
-    // 녹음 파일 다운로드
+    // Download recording file
     async downloadRecording(recording) {
-        // 파일 확장자 결정
+        // Determine file extension
         let extension = 'mp3';
         if (recording.type.includes('mp4') || recording.type.includes('m4a')) {
             extension = 'm4a';
         } else if (recording.type.includes('wav')) {
             extension = 'wav';
         } else if (recording.type.includes('webm')) {
-            // WebM은 iPhone에서 지원 안함 - WAV로 변환 시도
+            // WebM not supported on iPhone - try converting to WAV
             extension = 'wav';
             console.warn('WebM format detected - iPhone may not support playback');
         }
@@ -266,18 +265,18 @@ class StorageManager {
         document.body.removeChild(a);
     }
     
-    // 녹음 파일 내보내기 (모든 녹음)
+    // Export recording files (all recordings)
     async exportAllRecordings() {
         try {
             const recordings = await this.getAllRecordings();
             
             if (recordings.length === 0) {
-                alert('내보낼 녹음이 없습니다.');
+                alert('No recordings to export.');
                 return;
             }
             
-            // ZIP 파일로 묶기 (JSZip 라이브러리 필요)
-            // 여기서는 개별 다운로드로 구현
+            // Create ZIP file (requires JSZip library)
+            // Implementing individual downloads for now
             for (const recording of recordings) {
                 setTimeout(() => {
                     this.downloadRecording(recording);
@@ -286,11 +285,11 @@ class StorageManager {
             
         } catch (error) {
             console.error('Error exporting recordings:', error);
-            alert('녹음 파일 내보내기 실패');
+            alert('Failed to export recording files');
         }
     }
     
-    // 저장 공간 확인
+    // Check storage space
     async checkStorageQuota() {
         if ('storage' in navigator && 'estimate' in navigator.storage) {
             try {
@@ -299,9 +298,9 @@ class StorageManager {
                 
                 console.log(`Storage used: ${this.formatBytes(estimate.usage)} / ${this.formatBytes(estimate.quota)} (${percentUsed}%)`);
                 
-                // 저장 공간이 90% 이상 사용되면 경고
+                // Show warning if storage usage exceeds 90%
                 if (percentUsed > 90) {
-                    alert('저장 공간이 부족합니다. 일부 녹음을 삭제해주세요.');
+                    alert('Storage space is running low. Please delete some recordings.');
                 }
                 
                 return {
@@ -316,7 +315,7 @@ class StorageManager {
         }
     }
     
-    // 바이트 포맷팅
+    // Format bytes
     formatBytes(bytes) {
         if (bytes === 0) return '0 Bytes';
         
@@ -327,9 +326,9 @@ class StorageManager {
         return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
     }
     
-    // 녹음 시간 포맷팅
+    // Format recording duration
     formatDuration(duration) {
-        if (!duration || duration === '00:00:00') return '0초';
+        if (!duration || duration === '00:00:00') return '0 seconds';
         
         const parts = duration.split(':');
         const hours = parseInt(parts[0]);
@@ -337,13 +336,13 @@ class StorageManager {
         const seconds = parseInt(parts[2]);
         
         let result = '';
-        if (hours > 0) result += `${hours}시간 `;
-        if (minutes > 0) result += `${minutes}분 `;
-        if (seconds > 0) result += `${seconds}초`;
+        if (hours > 0) result += `${hours} hours `;
+        if (minutes > 0) result += `${minutes} minutes `;
+        if (seconds > 0) result += `${seconds} seconds`;
         
         return result.trim();
     }
 }
 
-// 전역 storage manager 인스턴스
+// Global storage manager instance
 window.storageManager = new StorageManager();
